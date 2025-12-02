@@ -43,12 +43,15 @@ if uploaded_file is not None:
                 st.title(num_links)
 
             # monthly timeline
-            st.title("Monthly Timeline")
-            timeline = helper.monthly_timeline(selected_user,df)
-            fig,ax = plt.subplots()
-            ax.plot(timeline['time'], timeline['message'],color='green')
-            plt.xticks(rotation='vertical')
-            st.pyplot(fig)
+            st.title("Daily Timeline")
+daily_timeline = helper.daily_timeline(selected_user, df)
+
+fig, ax = plt.subplots(figsize=(10, 4))
+ax.plot(daily_timeline['only_date'], daily_timeline['message'],
+        color='black', linewidth=2, marker='o')
+plt.xticks(rotation=45, ha='right')
+st.pyplot(fig)
+
 
             # daily timeline
             st.title("Daily Timeline")
@@ -133,3 +136,4 @@ if uploaded_file is not None:
     except Exception as e:
         st.error(f"❌ Error processing file: {str(e)}")
         st.info("💡 Make sure you're uploading a WhatsApp chat export (.txt file)")
+
