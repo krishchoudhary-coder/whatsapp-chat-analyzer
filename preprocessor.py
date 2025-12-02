@@ -2,22 +2,31 @@ import re
 import pandas as pd
 
 def preprocess(data):
-    pattern = '\d{1,2}/\d{1,2}/\d{2,4},\s\d{1,2}:\d{2}\s-\s'
-
+    # FIXED: 12hr AM/PM + 24hr format support
+    pattern = r'\d{1,2}/\d{1,2}/\d{2,4},?\s+\d{1,2}:\d{2}\s?(?:AM|PM|a\.m\.|p\.m\.|am|pm)?\s?-\s'
+    
     messages = re.split(pattern, data)[1:]
     dates = re.findall(pattern, data)
 
     df = pd.DataFrame({'user_message': messages, 'message_date': dates})
-    # convert message_date type
-    df['message_date'] = pd.to_datetime(df['message_date'], format='%d/%m/%Y, %H:%M - ')
-
+    
+    # FIXED: Multiple date formats
+    date_formats = ['%d/%m/%y, %I:%M %p - ', '%d/%m/%Y, %I:%M %p - ', '%d/%m/%y, %H:%M - ', '%d/%m/%Y, %H:%M - ']
+    for fmt in date_formats:
+        try:
+            df['message_date'] = pd.to_datetime(df['message_date'], format=fmt, errors='coerce')
+            if not df['message_date'].isna().all():
+                break
+        except:
+            continue
+    
     df.rename(columns={'message_date': 'date'}, inplace=True)
 
     users = []
     messages = []
     for message in df['user_message']:
         entry = re.split('([\w\W]+?):\s', message)
-        if entry[1:]:  # user name
+        if entry[1:]:
             users.append(entry[1])
             messages.append(" ".join(entry[2:]))
         else:
@@ -47,5 +56,4 @@ def preprocess(data):
             period.append(str(hour) + "-" + str(hour + 1))
 
     df['period'] = period
-
     return df
