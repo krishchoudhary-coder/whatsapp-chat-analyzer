@@ -107,8 +107,9 @@ def daily_timeline(selected_user,df):
         df = df[df['user'] == selected_user]
 
     daily_timeline = df.groupby('only_date').count()['message'].reset_index()
-
+    daily_timeline['only_date'] = daily_timeline['only_date'].astype(str)  # FIXED: Convert to string
     return daily_timeline
+
 
 def week_activity_map(selected_user,df):
     if selected_user != 'Overall':
@@ -130,3 +131,4 @@ def activity_heatmap(selected_user,df):
 
 
     return user_heatmap
+
