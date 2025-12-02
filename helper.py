@@ -102,12 +102,22 @@ def monthly_timeline(selected_user,df):
 
     return timeline
 
-def daily_timeline(selected_user,df):
+def daily_timeline(selected_user, df):
     if selected_user != 'Overall':
         df = df[df['user'] == selected_user]
 
     daily_timeline = df.groupby('only_date').count()['message'].reset_index()
-    daily_timeline['only_date'] = daily_timeline['only_date'].astype(str)  # FIXED: Convert to string
+    daily_timeline['only_date'] = pd.to_datetime(daily_timeline['only_date'])
+
+    # ↓↓↓ NEW: resample to weekly to reduce clutter
+    daily_timeline = (
+        daily_timeline
+        .set_index('only_date')
+        .resample('7D')
+        .sum()
+        .reset_index()
+    )
+
     return daily_timeline
 
 
@@ -131,4 +141,5 @@ def activity_heatmap(selected_user,df):
 
 
     return user_heatmap
+
 
